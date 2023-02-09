@@ -10,6 +10,7 @@ use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\PlatformRequest;
 use Shopware\Core\System\SalesChannel\Context\SalesChannelContextService;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Storefront\Framework\Cache\Event\ContextCacheCookieGenerateKeyEvent;
 use Shopware\Storefront\Framework\Routing\MaintenanceModeResolver;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\EventListener\AbstractSessionListener;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -48,7 +50,8 @@ class CacheResponseSubscriber implements EventSubscriberInterface
         private readonly MaintenanceModeResolver $maintenanceResolver,
         private readonly bool $reverseProxyEnabled,
         private readonly ?string $staleWhileRevalidate,
-        private readonly ?string $staleIfError
+        private readonly ?string $staleIfError,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -218,12 +221,18 @@ class CacheResponseSubscriber implements EventSubscriberInterface
 
     private function buildCacheHash(SalesChannelContext $context): string
     {
-        return md5(json_encode([
+        $parts = [
             $context->getRuleIds(),
             $context->getContext()->getVersionId(),
             $context->getCurrency()->getId(),
             $context->getCustomer() ? 'logged-in' : 'not-logged-in',
-        ], \JSON_THROW_ON_ERROR));
+        ];
+
+        $event = new ContextCacheCookieGenerateKeyEvent($context, $parts);
+
+        $this->eventDispatcher->dispatch($event);
+
+        return md5(json_encode($event->getParts(), \JSON_THROW_ON_ERROR));
     }
 
     /**
