@@ -112,17 +112,11 @@ class ProductCategoryDenormalizer
     {
         $query = $this->connection->createQueryBuilder();
         $query->select(
-            'LOWER(HEX(product.id)) as product_id',
+            'LOWER(HEX(mapping.product_id)) as product_id',
             'GROUP_CONCAT(category.path SEPARATOR \'\') as paths',
             'GROUP_CONCAT(LOWER(HEX(category.id)) SEPARATOR \'|\') as ids',
         );
-        $query->from('product');
-        $query->leftJoin(
-            'product',
-            'product_category',
-            'mapping',
-            'mapping.product_id = product.categories AND mapping.product_version_id = product.version_id'
-        );
+        $query->from('product_category', 'mapping');
         $query->leftJoin(
             'mapping',
             'category',
@@ -130,10 +124,10 @@ class ProductCategoryDenormalizer
             'mapping.category_id = category.id AND mapping.category_version_id = category.version_id AND mapping.category_version_id = :live'
         );
 
-        $query->addGroupBy('product.id');
+        $query->addGroupBy('mapping.product_id');
 
-        $query->andWhere('product.categories IN (:ids)');
-        $query->andWhere('product.version_id = :version');
+        $query->andWhere('mapping.categories IN (:ids)');
+        $query->andWhere('mapping.version_id = :version');
 
         $query->setParameter('version', Uuid::fromHexToBytes($context->getVersionId()));
         $query->setParameter('live', Uuid::fromHexToBytes(Defaults::LIVE_VERSION));
