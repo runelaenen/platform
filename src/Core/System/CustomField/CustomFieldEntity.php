@@ -38,6 +38,8 @@ class CustomFieldEntity extends Entity
 
     protected bool $includeInSearch = false;
 
+    protected bool $translatable = true;
+
     public function getName(): string
     {
         return $this->name;
@@ -152,5 +154,15 @@ class CustomFieldEntity extends Entity
     public function setIncludeInSearch(bool $includeInSearch): void
     {
         $this->includeInSearch = $includeInSearch;
+    }
+
+    public function isTranslatable(): bool
+    {
+        return $this->translatable;
+    }
+
+    public function setTranslatable(bool $translatable): void
+    {
+        $this->translatable = $translatable;
     }
 }

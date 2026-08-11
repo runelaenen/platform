@@ -1581,7 +1581,9 @@
     "labelCustomFieldSetSelectSwitch": "Zusatzfeld-Sets auswählen",
     "placeholderCustomFieldSetSelect": "Wähle Zusatzfeld-Sets aus ...",
     "labelCustomFieldSetSelect": "Zusatzfeld-Sets",
-    "messagePluginSets": "Plugin-Zusatzfeld-Sets (Können nicht entfernt werden)"
+    "messagePluginSets": "Plugin-Zusatzfeld-Sets (Können nicht entfernt werden)",
+    "labelSharedCustomField": "Für alle Sprachen gleich",
+    "tooltipSharedCustomField": "Dieses Zusatzfeld ist nicht übersetzbar. Es hat einen Wert, der in jeder Sprache gleich ist."
   },
   "sw-rating-stars": {
     "ratingTooltipText": "{actual} von {max} Sternen"

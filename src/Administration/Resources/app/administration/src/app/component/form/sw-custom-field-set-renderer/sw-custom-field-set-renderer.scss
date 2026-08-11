@@ -1,3 +1,5 @@
+@import "~scss/variables";
+
 .sw-custom-field-set-renderer {
     .sw-select {
         margin-bottom: 22px;
@@ -18,6 +20,16 @@
     .sw-custom-field-set-renderer__global-custom-field-list {
         padding-left: 22px;
         margin-bottom: 22px;
+    }
+
+    .sw-custom-field-set-renderer__shared-indicator {
+        display: flex;
+        margin-bottom: var(--mt-spacing-xs);
+        font-size: var(--mt-font-size-2xs);
+        color: var(--color-text-secondary-default);
+        line-height: var(--font-line-height-xs);
+        align-items: center;
+        gap: var(--scale-size-8);
     }
 
     .sw-inherit-wrapper {

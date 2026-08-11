@@ -179,6 +179,69 @@ class CustomFieldServiceTest extends TestCase
         static::assertInstanceOf(LongTextField::class, $customFieldService->getCustomField('test'));
     }
 
+    public function testIsTranslatableByDefault(): void
+    {
+        $this->connection->method('fetchFirstColumn')->willReturn([]);
+
+        static::assertTrue($this->customFieldService->isTranslatable('test'));
+        static::assertFalse($this->customFieldService->hasNonTranslatableCustomFields());
+    }
+
+    public function testIsTranslatableForFlaggedCustomField(): void
+    {
+        $this->connection->method('fetchFirstColumn')->willReturn(['shared_field']);
+
+        static::assertFalse($this->customFieldService->isTranslatable('shared_field'));
+        static::assertTrue($this->customFieldService->isTranslatable('other_field'));
+        static::assertTrue($this->customFieldService->hasNonTranslatableCustomFields());
+    }
+
+    public function testNonTranslatableLookupIgnoresActiveState(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects($this->once())
+            ->method('fetchFirstColumn')
+            ->with(static::stringContains('`translatable` = 0'))
+            ->willReturnCallback(function (string $sql): array {
+                // Routing must not depend on the activation state of a custom field
+                static::assertStringNotContainsString('active', $sql);
+
+                return ['inactive_shared_field'];
+            });
+
+        $customFieldService = new CustomFieldService($connection);
+
+        static::assertFalse($customFieldService->isTranslatable('inactive_shared_field'));
+    }
+
+    public function testNonTranslatableLookupShouldNotRefetch(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects($this->once())
+            ->method('fetchFirstColumn')
+            ->willReturn([]);
+
+        $customFieldService = new CustomFieldService($connection);
+        $customFieldService->isTranslatable('test');
+        $customFieldService->isTranslatable('test');
+    }
+
+    public function testResetClearsNonTranslatableLookup(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects($this->exactly(2))
+            ->method('fetchFirstColumn')
+            ->willReturnOnConsecutiveCalls(
+                [],
+                ['test'],
+            );
+
+        $customFieldService = new CustomFieldService($connection);
+        static::assertTrue($customFieldService->isTranslatable('test'));
+        $customFieldService->reset();
+        static::assertFalse($customFieldService->isTranslatable('test'));
+    }
+
     public function testSubscribedEvents(): void
     {
         $events = CustomFieldService::getSubscribedEvents();

@@ -39,7 +39,7 @@
                                     v-model:value="customFields[customField.name]"
                                     v-bind="getInheritWrapperBind(customField)"
                                     :class="'sw-form-field-renderer-field__' + customField.name"
-                                    :has-parent="hasParent"
+                                    :has-parent="hasParentForCustomField(customField)"
                                     :required="customField.config.validation === 'required'"
                                     :inherited-value="getInheritedCustomField(customField.name)"
                                 >
@@ -49,10 +49,25 @@
                                             :key="props.isInherited"
                                             :class="'sw-form-field-renderer-input-field__' + customField.name"
                                             :disabled="disabled"
-                                            :value="props.currentValue"
+                                            :value="getDisplayValue(customField, props)"
                                             v-on="getElementEventListeners(customField, props)"
                                             @update:value="props.updateCurrentValue"
-                                        />
+                                        >
+                                            <template #hint>
+                                                <div class="sw-custom-field-set-renderer__shared-indicator"
+                                                     v-if="isSharedCustomField(customField)"
+                                                     v-tooltip="$t('sw-custom-field-set-renderer.tooltipSharedCustomField')"
+                                                     :class="'sw-custom-field-set-renderer__shared-indicator--' + customField.name"
+                                                >
+                                                    <mt-icon
+                                                        size="12"
+                                                        name="solid-globe"
+                                                        class="sw-custom-field-set-renderer__shared-indicator-icon"
+                                                    />
+                                                    <p>{{ $t('sw-custom-field-set-renderer.labelSharedCustomField') }}</p>
+                                                </div>
+                                            </template>
+                                        </sw-form-field-renderer>
                                     </template>
                                 </sw-inherit-wrapper>
                             </template>
@@ -118,7 +133,7 @@
                                             v-model:value="customFields[customField.name]"
                                             v-bind="getInheritWrapperBind(customField)"
                                             :class="'sw-form-field-renderer-field__' + customField.name"
-                                            :has-parent="hasParent"
+                                            :has-parent="hasParentForCustomField(customField)"
                                             :required="customField.config.validation === 'required'"
                                             :inherited-value="getInheritedCustomField(customField.name)"
                                         >
@@ -128,10 +143,27 @@
                                                     :key="props.isInherited"
                                                     :class="'sw-form-field-renderer-input-field__' + customField.name"
                                                     :disabled="disabled"
-                                                    :value="props.currentValue"
+                                                    :value="getDisplayValue(customField, props)"
                                                     v-on="getElementEventListeners(customField, props)"
                                                     @update:value="props.updateCurrentValue"
-                                                />
+                                                >
+                                                    <template #hint>
+                                                        <div class="sw-custom-field-set-renderer__shared-indicator"
+                                                             v-if="isSharedCustomField(customField)"
+                                                             v-tooltip="$t('sw-custom-field-set-renderer.tooltipSharedCustomField')"
+                                                             :class="'sw-custom-field-set-renderer__shared-indicator--' + customField.name"
+                                                        >
+                                                            <mt-icon
+                                                                size="12"
+                                                                name="solid-globe"
+                                                                class="sw-custom-field-set-renderer__shared-indicator-icon"
+                                                            />
+                                                            <p>{{ $t('sw-custom-field-set-renderer.labelSharedCustomField') }}</p>
+                                                        </div>
+                                                    </template>
+                                                </sw-form-field-renderer>
+
+
                                             </template>
                                         </sw-inherit-wrapper>
                                     </template>

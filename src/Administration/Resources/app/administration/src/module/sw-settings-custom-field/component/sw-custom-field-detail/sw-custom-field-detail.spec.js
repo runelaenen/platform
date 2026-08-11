@@ -344,4 +344,119 @@ describe('src/module/sw-settings-custom-field/component/sw-custom-field-detail',
         const banner = wrapper.find('.sw-custom-field-detail__searchable-banner');
         expect(banner.exists()).toBe(false);
     });
+
+    describe('translatable', () => {
+        function createExistingField(translatable = true) {
+            return {
+                ...customFieldFixture,
+                _isNew: false,
+                translatable,
+            };
+        }
+
+        it('should default new custom fields to translatable', async () => {
+            const wrapper = await createWrapper(defaultProps, ['custom_field.editor']);
+            await flushPromises();
+
+            expect(wrapper.vm.currentCustomField.translatable).toBe(true);
+        });
+
+        it('should save without confirmation when the field stays translatable', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-detail__translatable-confirmation').exists()).toBe(false);
+            expect(wrapper.emitted('custom-field-edit-save')).toHaveLength(1);
+        });
+
+        it('should ask for confirmation before making an existing field non-translatable', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.currentCustomField.translatable = false;
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-detail__translatable-confirmation').exists()).toBe(true);
+            expect(wrapper.emitted('custom-field-edit-save')).toBeUndefined();
+        });
+
+        it('should save after the confirmation was accepted', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.currentCustomField.translatable = false;
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            wrapper.vm.onConfirmTranslatableChange();
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-detail__translatable-confirmation').exists()).toBe(false);
+            expect(wrapper.emitted('custom-field-edit-save')).toHaveLength(1);
+        });
+
+        it('should revert the switch when the confirmation is cancelled', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.currentCustomField.translatable = false;
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            wrapper.vm.onCancelTranslatableChange();
+            await flushPromises();
+
+            expect(wrapper.vm.currentCustomField.translatable).toBe(true);
+            expect(wrapper.emitted('custom-field-edit-save')).toBeUndefined();
+        });
+
+        it('should warn again when the switch is toggled back and forth', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.currentCustomField.translatable = false;
+            wrapper.vm.currentCustomField.translatable = true;
+            wrapper.vm.currentCustomField.translatable = false;
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-detail__translatable-confirmation').exists()).toBe(true);
+        });
+
+        it('should not ask for confirmation when the field is already non-translatable', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(false), set: {} }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            wrapper.vm.onSave();
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-detail__translatable-confirmation').exists()).toBe(false);
+            expect(wrapper.emitted('custom-field-edit-save')).toHaveLength(1);
+        });
+
+        it('should not be editable for app custom fields', async () => {
+            const wrapper = await createWrapper({ currentCustomField: createExistingField(), set: { appId: 'app-id' } }, [
+                'custom_field.editor',
+            ]);
+            await flushPromises();
+
+            expect(wrapper.vm.isAppCustomField).toBe(true);
+        });
+    });
 });

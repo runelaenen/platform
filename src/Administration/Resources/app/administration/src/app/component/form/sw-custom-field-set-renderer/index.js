@@ -521,6 +521,30 @@ export default {
             return eventHandler;
         },
 
+        isSharedCustomField(customField) {
+            return customField.translatable === false;
+        },
+
+        hasParentForCustomField(customField) {
+            if (this.isSharedCustomField(customField)) {
+                return this.hasExplicitParentEntity;
+            }
+
+            return this.hasParent;
+        },
+
+        getDisplayValue(customField, props) {
+            if (!this.isSharedCustomField(customField)) {
+                return props.currentValue;
+            }
+
+            if (props.currentValue !== null && props.currentValue !== undefined) {
+                return props.currentValue;
+            }
+
+            return this.entity?.translated?.customFields?.[customField.name] ?? props.currentValue;
+        },
+
         getInheritWrapperBind(customField) {
             if (this.supportsMapInheritance(customField)) {
                 return {};

@@ -28,6 +28,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Write\EntityWriteGatewayInterfa
 use Shopware\Core\Framework\DataAbstractionLayer\Write\WriteCommandExtractor;
 use Shopware\Core\Framework\Util\HtmlSanitizer;
 use Shopware\Core\System\CustomField\CustomFieldService;
+use Shopware\Core\System\CustomField\DataAbstractionLayer\NonTranslatableCustomFieldRerouter;
 use Shopware\Core\Test\Stub\Doctrine\FakeConnection;
 use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -77,6 +78,8 @@ class StaticDefinitionInstanceRegistry extends DefinitionInstanceRegistry
 
     private function setUpSerializers(): void
     {
+        $rerouter = new NonTranslatableCustomFieldRerouter(new CustomFieldService(new FakeConnection([])));
+
         $this->serializers = [
             IdFieldSerializer::class => new IdFieldSerializer($this->validator, $this),
             FkFieldSerializer::class => new FkFieldSerializer($this->validator, $this),
@@ -96,16 +99,16 @@ class StaticDefinitionInstanceRegistry extends DefinitionInstanceRegistry
                 new CustomFieldService(new FakeConnection([['foo', 'int']]))
             ),
             ManyToManyAssociationFieldSerializer::class => new ManyToManyAssociationFieldSerializer(
-                new WriteCommandExtractor($this->entityWriteGateway, $this),
+                new WriteCommandExtractor($this->entityWriteGateway, $this, $rerouter),
             ),
             ManyToOneAssociationFieldSerializer::class => new ManyToOneAssociationFieldSerializer(
-                new WriteCommandExtractor($this->entityWriteGateway, $this),
+                new WriteCommandExtractor($this->entityWriteGateway, $this, $rerouter),
             ),
             OneToManyAssociationFieldSerializer::class => new OneToManyAssociationFieldSerializer(
-                new WriteCommandExtractor($this->entityWriteGateway, $this),
+                new WriteCommandExtractor($this->entityWriteGateway, $this, $rerouter),
             ),
             OneToOneAssociationFieldSerializer::class => new OneToOneAssociationFieldSerializer(
-                new WriteCommandExtractor($this->entityWriteGateway, $this),
+                new WriteCommandExtractor($this->entityWriteGateway, $this, $rerouter),
             ),
         ];
     }

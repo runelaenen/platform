@@ -16,6 +16,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Write\WriteCommandExtractor;
 use Shopware\Core\Framework\DataAbstractionLayer\Write\WriteParameterBag;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\System\CustomField\DataAbstractionLayer\NonTranslatableCustomFieldRerouter;
 
 /**
  * @internal
@@ -27,7 +28,8 @@ class TranslationsAssociationFieldSerializer implements FieldSerializerInterface
      * @internal
      */
     public function __construct(
-        private readonly WriteCommandExtractor $writeExtractor
+        private readonly WriteCommandExtractor $writeExtractor,
+        private readonly NonTranslatableCustomFieldRerouter $customFieldRerouter
     ) {
     }
 
@@ -115,6 +117,8 @@ class TranslationsAssociationFieldSerializer implements FieldSerializerInterface
             }
             $translations[$languageId] = $subResources;
         }
+
+        $translations = $this->customFieldRerouter->rerouteTranslations($referenceDefinition, $translations);
 
         foreach ($translations as $languageId => $translation) {
             $clonedParams = $parameters->cloneForSubresource(

@@ -37,11 +37,19 @@ class CustomFieldXmlLoaderTest extends TestCase
         static::assertSame('test_set_text_field', $textField->getName());
         static::assertFalse($textField->isIncludeInSearch());
 
+        // an omitted element must stay undefined so it never resets a stored value
+        static::assertNull($intField->isTranslatable());
+        static::assertArrayNotHasKey('translatable', $intField->toEntityPayload());
+
         $secondSet = $sets[1];
         static::assertSame('test_global_set', $secondSet->getName());
         static::assertTrue($secondSet->getGlobal());
         static::assertSame(['order'], $secondSet->getRelatedEntities());
         static::assertCount(1, $secondSet->getFields());
+
+        $boolField = $secondSet->getFields()[0];
+        static::assertFalse($boolField->isTranslatable());
+        static::assertFalse($boolField->toEntityPayload()['translatable'] ?? null);
     }
 
     public function testLoadInvalidFileThrows(): void

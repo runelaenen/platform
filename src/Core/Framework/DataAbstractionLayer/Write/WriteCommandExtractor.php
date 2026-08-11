@@ -5,6 +5,7 @@ namespace Shopware\Core\Framework\DataAbstractionLayer\Write;
 use Shopware\Core\Framework\DataAbstractionLayer\DataAbstractionLayerException;
 use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityTranslationDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\AssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ChildrenAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\CreatedByField;
@@ -34,6 +35,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Write\DataStack\KeyValuePair;
 use Shopware\Core\Framework\DataAbstractionLayer\Write\FieldException\WriteFieldException;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\Validation\WriteConstraintViolationException;
+use Shopware\Core\System\CustomField\DataAbstractionLayer\NonTranslatableCustomFieldRerouter;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 
@@ -52,7 +54,8 @@ class WriteCommandExtractor
      */
     public function __construct(
         private readonly EntityWriteGatewayInterface $entityExistenceGateway,
-        private readonly DefinitionInstanceRegistry $registry
+        private readonly DefinitionInstanceRegistry $registry,
+        private readonly NonTranslatableCustomFieldRerouter $customFieldRerouter
     ) {
     }
 
@@ -63,6 +66,16 @@ class WriteCommandExtractor
      */
     public function normalize(EntityDefinition $definition, array $rawData, WriteParameterBag $parameters): array
     {
+        if ($definition instanceof EntityTranslationDefinition) {
+            // values of non-translatable custom fields belong into a different translation row,
+            // which can only be added while the payload is still a list of rows
+            $rawData = $this->customFieldRerouter->rerouteTranslationRows(
+                $definition,
+                $rawData,
+                $parameters->getContext()->getContext()->getLanguageId()
+            );
+        }
+
         foreach ($rawData as $i => $row) {
             $parameters->setPath('/' . $i);
 

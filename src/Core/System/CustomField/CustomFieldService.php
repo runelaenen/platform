@@ -39,6 +39,11 @@ class CustomFieldService implements EventSubscriberInterface, ResetInterface
     private array $customFieldObjects = [];
 
     /**
+     * @var ?array<string, true>
+     */
+    private ?array $nonTranslatableCustomFields = null;
+
+    /**
      * @internal
      */
     public function __construct(private readonly Connection $connection)
@@ -65,6 +70,16 @@ class CustomFieldService implements EventSubscriberInterface, ResetInterface
         };
 
         return $this->customFieldObjects[$attributeName] = $object;
+    }
+
+    public function isTranslatable(string $customFieldName): bool
+    {
+        return !isset($this->getNonTranslatableCustomFields()[$customFieldName]);
+    }
+
+    public function hasNonTranslatableCustomFields(): bool
+    {
+        return $this->getNonTranslatableCustomFields() !== [];
     }
 
     /**
@@ -101,6 +116,7 @@ class CustomFieldService implements EventSubscriberInterface, ResetInterface
     {
         $this->customFields = null;
         $this->customFieldObjects = [];
+        $this->nonTranslatableCustomFields = null;
     }
 
     /**
@@ -132,5 +148,20 @@ class CustomFieldService implements EventSubscriberInterface, ResetInterface
         $customFields = $this->connection->fetchAllKeyValue('SELECT `name`, `type` FROM `custom_field` WHERE `active` = 1');
 
         return $this->customFields = $customFields;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function getNonTranslatableCustomFields(): array
+    {
+        if ($this->nonTranslatableCustomFields !== null) {
+            return $this->nonTranslatableCustomFields;
+        }
+
+        /** @var list<string> $names */
+        $names = $this->connection->fetchFirstColumn('SELECT `name` FROM `custom_field` WHERE `translatable` = 0');
+
+        return $this->nonTranslatableCustomFields = array_fill_keys($names, true);
     }
 }

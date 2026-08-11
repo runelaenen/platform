@@ -51,6 +51,7 @@ class CustomFieldDefinition extends EntityDefinition
             'allowCartExpose' => false,
             'storeApiAware' => true,
             'includeInSearch' => false,
+            'translatable' => true,
         ];
     }
 
@@ -67,6 +68,7 @@ class CustomFieldDefinition extends EntityDefinition
             (new BoolField('allow_cart_expose', 'allowCartExpose'))->setDescription('When boolean value is `true`, then the custom field\'s data can be exposed within the shopping cart or order process.'),
             new BoolField('store_api_aware', 'storeApiAware'),
             new BoolField('include_in_search', 'includeInSearch'),
+            (new BoolField('translatable', 'translatable'))->setDescription('When boolean value is `false`, the custom field holds a single value shared across all languages, stored in the system default language.'),
             new ManyToOneAssociationField('customFieldSet', 'set_id', CustomFieldSetDefinition::class, 'id', false),
             (new OneToManyAssociationField('productSearchConfigFields', ProductSearchConfigFieldDefinition::class, 'custom_field_id', 'id'))->addFlags(new CascadeDelete()),
         ]);

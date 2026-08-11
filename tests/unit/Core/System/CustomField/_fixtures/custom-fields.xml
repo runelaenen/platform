@@ -32,6 +32,7 @@
         <fields>
             <bool name="test_global_bool">
                 <label>Bool Field</label>
+                <translatable>false</translatable>
             </bool>
         </fields>
     </custom-field-set>

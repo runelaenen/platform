@@ -1581,7 +1581,9 @@
     "labelCustomFieldSetSelectSwitch": "Select custom field sets",
     "placeholderCustomFieldSetSelect": "Select custom field sets...",
     "labelCustomFieldSetSelect": "Custom field sets",
-    "messagePluginSets": "Plugin custom field sets (can't be removed)"
+    "messagePluginSets": "Plugin custom field sets (can't be removed)",
+    "labelSharedCustomField": "Shared across all languages",
+    "tooltipSharedCustomField": "This custom field is not translatable. It has one value that is the same in every language."
   },
   "sw-rating-stars": {
     "ratingTooltipText": "{actual} of {max} stars"

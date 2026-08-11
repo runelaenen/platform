@@ -44,6 +44,8 @@ export default {
         return {
             fieldTypes: {},
             disableCartExpose: true,
+            showTranslatableConfirmation: false,
+            persistedTranslatable: true,
         };
     },
 
@@ -60,6 +62,18 @@ export default {
 
         canSave() {
             return this.currentCustomField.config.customFieldType;
+        },
+
+        isAppCustomField() {
+            return !!this.set.appId;
+        },
+
+        becomesNonTranslatable() {
+            return (
+                !this.currentCustomField._isNew &&
+                this.persistedTranslatable === true &&
+                this.currentCustomField.translatable === false
+            );
         },
 
         renderComponentName() {
@@ -137,6 +151,12 @@ export default {
                 this.currentCustomField.includeInSearch = false;
             }
 
+            if (this.currentCustomField.translatable === undefined || this.currentCustomField.translatable === null) {
+                this.currentCustomField.translatable = true;
+            }
+
+            this.persistedTranslatable = this.currentCustomField.translatable;
+
             if (!this.currentCustomField.allowCartExpose) {
                 this.disableCartExpose = false;
 
@@ -160,7 +180,25 @@ export default {
             this.$emit('custom-field-edit-cancel', this.currentCustomField);
         },
 
+        onCancelTranslatableChange() {
+            this.showTranslatableConfirmation = false;
+            this.currentCustomField.translatable = this.persistedTranslatable;
+        },
+
+        onConfirmTranslatableChange() {
+            this.showTranslatableConfirmation = false;
+            this.persistedTranslatable = false;
+
+            this.onSave();
+        },
+
         onSave() {
+            if (this.becomesNonTranslatable) {
+                this.showTranslatableConfirmation = true;
+
+                return;
+            }
+
             this.applyTypeConfiguration();
 
             if (!this.currentCustomField._isNew) {

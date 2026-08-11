@@ -2700,4 +2700,79 @@ describe('src/app/component/form/sw-custom-field-set-renderer', () => {
             expect(inputField.attributes('value')).toBe(expected);
         },
     );
+
+    describe('non-translatable custom fields', () => {
+        function createProps(translatable, customFields = {}) {
+            return {
+                entity: {
+                    customFields,
+                    translated: {
+                        customFields: {
+                            field1: 'shared value',
+                        },
+                    },
+                },
+                sets: createEntityCollection([
+                    {
+                        id: 'set1',
+                        name: 'set1',
+                        config: {
+                            label: {
+                                'en-GB': 'Set 1 Label GB',
+                            },
+                        },
+                        customFields: [
+                            {
+                                name: 'field1',
+                                type: 'text',
+                                translatable,
+                                config: {
+                                    label: 'field1Label',
+                                },
+                            },
+                        ],
+                    },
+                ]),
+            };
+        }
+
+        it('should show the shared indicator for non-translatable custom fields', async () => {
+            wrapper = await createWrapper(createProps(false));
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-set-renderer__shared-indicator--field1').exists()).toBe(true);
+        });
+
+        it('should not show the shared indicator for translatable custom fields', async () => {
+            wrapper = await createWrapper(createProps(true));
+            await flushPromises();
+
+            expect(wrapper.find('.sw-custom-field-set-renderer__shared-indicator--field1').exists()).toBe(false);
+        });
+
+        it('should display the shared value when the entity has no own value', async () => {
+            wrapper = await createWrapper(createProps(false));
+            await flushPromises();
+
+            const inputField = wrapper.find('.sw-form-field-renderer-field__field1 input');
+            expect(inputField.attributes('value')).toBe('shared value');
+        });
+
+        it('should not copy the shared value into the entity', async () => {
+            const props = createProps(false);
+            wrapper = await createWrapper(props);
+            await flushPromises();
+
+            // opening the form must not mark the entity as changed
+            expect(wrapper.vm.entity.customFields.field1).toBeUndefined();
+        });
+
+        it('should not offer the per language override for non-translatable custom fields', async () => {
+            wrapper = await createWrapper(createProps(false));
+            await flushPromises();
+
+            const customField = { name: 'field1', translatable: false };
+            expect(wrapper.vm.hasParentForCustomField(customField)).toBe(wrapper.vm.hasExplicitParentEntity);
+        });
+    });
 });

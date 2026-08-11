@@ -31,7 +31,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\Write\WriteParameterBag;
 use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Framework\Validation\WriteConstraintViolationException;
+use Shopware\Core\System\CustomField\CustomFieldService;
+use Shopware\Core\System\CustomField\DataAbstractionLayer\NonTranslatableCustomFieldRerouter;
 use Shopware\Core\Test\Stub\DataAbstractionLayer\StaticDefinitionInstanceRegistry;
+use Shopware\Core\Test\Stub\Doctrine\FakeConnection;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -85,7 +88,8 @@ class WriteCommandExtractorTest extends TestCase
         );
         $extractor = new WriteCommandExtractor(
             static::createStub(EntityWriteGateway::class),
-            $registry
+            $registry,
+            new NonTranslatableCustomFieldRerouter(new CustomFieldService(new FakeConnection([])))
         );
         $context = Context::createDefaultContext($scope);
 
@@ -174,7 +178,8 @@ class WriteCommandExtractorTest extends TestCase
 
         $extractor = new WriteCommandExtractor(
             $existenceGateway,
-            $registry
+            $registry,
+            new NonTranslatableCustomFieldRerouter(new CustomFieldService(new FakeConnection([])))
         );
 
         $id = Uuid::randomHex();

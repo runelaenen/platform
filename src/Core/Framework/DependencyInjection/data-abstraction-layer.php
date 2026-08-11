@@ -141,6 +141,7 @@ use Shopware\Core\Framework\Telemetry\Metrics\Config\MetricConfigProvider;
 use Shopware\Core\Framework\Telemetry\Metrics\Meter;
 use Shopware\Core\Framework\Util\HtmlSanitizer;
 use Shopware\Core\System\CustomField\CustomFieldService;
+use Shopware\Core\System\CustomField\DataAbstractionLayer\NonTranslatableCustomFieldRerouter;
 use Shopware\Core\System\Language\LanguageLoader;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelDefinitionInstanceRegistry;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -408,6 +409,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->args([
             service(EntityWriteGatewayInterface::class),
             service(DefinitionInstanceRegistry::class),
+            service(NonTranslatableCustomFieldRerouter::class),
         ]);
 
     $services->set(EntityWriteGatewayInterface::class, EntityWriteGateway::class)
@@ -761,7 +763,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->set(TranslationsAssociationFieldSerializer::class)
         ->args([
             service(WriteCommandExtractor::class),
-            service(EntityWriteGatewayInterface::class),
+            service(NonTranslatableCustomFieldRerouter::class),
         ])
         ->tag('shopware.field_serializer');
 

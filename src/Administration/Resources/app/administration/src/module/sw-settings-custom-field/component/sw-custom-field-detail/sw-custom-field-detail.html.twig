@@ -69,6 +69,17 @@
         />
         {% endblock %}
 
+        {% block sw_custom_field_detail_modal_translatable %}
+        <mt-switch
+            v-model="currentCustomField.translatable"
+            bordered
+            :help-text="$t('sw-settings-custom-field.customField.detail.tooltipTranslatable')"
+            class="sw-custom-field-detail__translatable"
+            :label="$t('sw-settings-custom-field.customField.detail.labelTranslatable')"
+            :disabled="!acl.can('custom_field.editor') || isAppCustomField || undefined"
+        />
+        {% endblock %}
+
         {% block sw_custom_field_detail_modal_store_api_aware %}
         <mt-switch
             v-model="currentCustomField.storeApiAware"
@@ -116,6 +127,37 @@
             :set="set"
         />
     </div>
+    {% endblock %}
+
+    {% block sw_custom_field_detail_modal_translatable_confirmation %}
+    <sw-modal
+        v-if="showTranslatableConfirmation"
+        variant="small"
+        class="sw-custom-field-detail__translatable-confirmation"
+        :title="$t('global.default.warning')"
+        @modal-close="onCancelTranslatableChange"
+    >
+        <p>{{ $t('sw-settings-custom-field.customField.detail.confirmTranslatableChange') }}</p>
+
+        <template #modal-footer>
+            <mt-button
+                size="small"
+                variant="secondary"
+                @click="onCancelTranslatableChange"
+            >
+                {{ $t('global.default.cancel') }}
+            </mt-button>
+
+            <mt-button
+                class="sw-custom-field-detail__translatable-confirmation-confirm"
+                variant="critical"
+                size="small"
+                @click="onConfirmTranslatableChange"
+            >
+                {{ $t('global.default.confirm') }}
+            </mt-button>
+        </template>
+    </sw-modal>
     {% endblock %}
 
     {% block sw_custom_field_detail_modal_footer %}
